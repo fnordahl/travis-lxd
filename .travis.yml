@@ -1,13 +1,14 @@
 ---
 sudo: required
-dist: trusty
+dist: xenial
 language: python
 env:
  - LINT=1
  - IMAGE="ubuntu:trusty"
  - IMAGE="ubuntu:xenial"
- - IMAGE="ubuntu:artful"
- - IMAGE="images:ubuntu/bionic"
+ - IMAGE="ubuntu:bionic"
+ - IMAGE="ubuntu:cosmic"
+ - IMAGE="images:ubuntu/disco"
  - IMAGE="images:centos/6"
  - IMAGE="images:centos/7"
 script:
@@ -16,15 +17,12 @@ script:
 # wait for lxd socket to be ready after snap installation
 # sudo back to ourself to activate lxd group membership
  - if [ ! -z ${IMAGE} ]; then
-      sudo apt-get -qq update;
-      sudo apt-get -y install snapd;
+      sudo apt remove -y --purge lxd lxd-client;
       sudo snap install lxd;
       sudo sh -c 'echo PATH=/snap/bin:$PATH >> /etc/environment';
-      while [ ! -S /var/snap/lxd/common/lxd/unix.socket ]; do echo "Waiting for LXD socket...";sleep 0.2;done;
+      sudo lxd waitready;
       sudo lxd init --auto;
       sudo usermod -a -G lxd travis;
-      sudo su travis -c 'lxc network create lxdbr0';
-      sudo su travis -c 'lxc network attach-profile lxdbr0 default eth0';
    fi
  - if [ ! -z ${IMAGE} ]; then
       sudo su travis -c 'lxc launch ${IMAGE} mymachinecontainer';
