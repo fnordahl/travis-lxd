@@ -1,30 +1,31 @@
 ---
 sudo: required
-dist: xenial
+dist: bionic
 language: python
 env:
  - LINT=1
  - IMAGE="ubuntu:trusty"
  - IMAGE="ubuntu:xenial"
  - IMAGE="ubuntu:bionic"
- - IMAGE="ubuntu:cosmic"
- - IMAGE="images:ubuntu/disco"
- - IMAGE="images:centos/6"
- - IMAGE="images:centos/7"
+ - IMAGE="ubuntu:eoan"
+ - IMAGE="images:ubuntu/focal/cloud"
+ - IMAGE="images:centos/6/cloud"
+ - IMAGE="images:centos/7/cloud"
+ - IMAGE="images:centos/8/cloud"
 script:
  - if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
 # setup dependencies here to save time on simpler test environments
 # wait for lxd socket to be ready after snap installation
-# sudo back to ourself to activate lxd group membership
+# change permissions on lxd socket to allow travis user access
+# (^^ this is a throw-away CI environment, do not do this at home)
  - if [ ! -z ${IMAGE} ]; then
       sudo apt remove -y --purge lxd lxd-client;
       sudo snap install lxd;
-      sudo sh -c 'echo PATH=/snap/bin:$PATH >> /etc/environment';
       sudo lxd waitready;
       sudo lxd init --auto;
-      sudo usermod -a -G lxd travis;
+      sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;
    fi
  - if [ ! -z ${IMAGE} ]; then
-      sudo su travis -c 'lxc launch ${IMAGE} mymachinecontainer';
-      sudo su travis -c 'lxc exec mymachinecontainer -- sh -c "lsb_release -a || cat /etc/redhat-release"';
+      lxc launch ${IMAGE} mymachinecontainer;
+      lxc exec mymachinecontainer -- sh -c "lsb_release -a || cat /etc/redhat-release";
    fi
