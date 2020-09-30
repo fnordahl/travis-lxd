@@ -1,14 +1,13 @@
 ---
 sudo: required
-dist: bionic
+dist: focal
 language: python
 env:
  - LINT=1
  - IMAGE="ubuntu:trusty"
  - IMAGE="ubuntu:xenial"
  - IMAGE="ubuntu:bionic"
- - IMAGE="ubuntu:eoan"
- - IMAGE="images:ubuntu/focal/cloud"
+ - IMAGE="ubuntu:focal"
  - IMAGE="images:centos/6/cloud"
  - IMAGE="images:centos/7/cloud"
  - IMAGE="images:centos/8/cloud"
@@ -19,9 +18,6 @@ script:
 # change permissions on lxd socket to allow travis user access
 # (^^ this is a throw-away CI environment, do not do this at home)
  - if [ ! -z ${IMAGE} ]; then
-      sudo apt remove -y --purge lxd lxd-client;
-      sudo snap install lxd;
-      sudo lxd waitready;
       sudo lxd init --auto;
       sudo chmod 666 /var/snap/lxd/common/lxd/unix.socket;
    fi
